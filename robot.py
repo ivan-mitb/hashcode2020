@@ -24,6 +24,7 @@
 
 import heapq
 import math
+from array import array
 
 class Arm:
     '''
@@ -111,6 +112,28 @@ def step():
     update positions of arms and task status
     '''
 
+def printenv(env, tasks):
+    ''' print an ASCII map of the world '''
+    W, H, mountpoints = env
+    map = [array('b', b'.' * W) for _ in range(H)]
+    for y,x in mountpoints:
+        map[x][y] = ord(b'm')
+    for y,x in [ap for t in tasks for ap in t.apoints]:
+        map[x][y] = ord(b'A')
+    for m in map:
+        print(m.tobytes().decode())
+
+def printroute(path, env):
+    ''' print an ASCII map of the world and the given path '''
+    W, H, mountpoints = env
+    map = [array('b', b'.' * W) for _ in range(H)]
+    for y,x in path:
+        map[x][y] = ord(b'X')
+    for y,x in mountpoints:
+        map[x][y] = ord(b'm')
+    for m in map:
+        print(m.tobytes().decode())
+
 def setup():
     '''
     read input file
@@ -127,6 +150,7 @@ def setup():
     W, H, R, M, T, L, mountpoints, tasks = read_input('test3.txt')
     env = (W, H, mountpoints)   # the environment (game board)
     print(env, tasks)
+    printenv(env, tasks)
     # find shortest path & dist from every mountpoint to every task
     for m in mountpoints:
         print('mountpoint', m)
@@ -136,9 +160,10 @@ def setup():
             for a in t.apoints:
                 path, d = getroute(env, p, a)
                 print('    path', len(path)) #, path)
+                printroute(path, env)
                 p = a
     # now choose the best R mountpoints, and assign the arms there.
     # set each arm with the path to its assigned apoints.
 
 if __name__ == '__main__':
-    setup()
+    setup() 
