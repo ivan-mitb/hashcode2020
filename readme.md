@@ -16,9 +16,9 @@ here's my strategy:
 2. assign each task to its nearest mountpoint, then assign an arm to each mountpoint.
 3. now loop for each time step:
 
-- move each arm according to its assigned route to the assembly point
-- check for collision
-- if collision, find new route
+   - move each arm according to its assigned route to the assembly point
+   - check for collision
+   - if collision, find new route
 
 at this point, things get complicated :sweat_smile:
 
