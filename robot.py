@@ -45,10 +45,14 @@ class Task:
     '''
     score
     apoints : list of assembly points
+    mountpt, mountptdist : the nearest mountpoint & dist
+    wholepath : list of points forming the complete path between all apoints, in order
+    wholedist : total distance of wholepath
     '''
     def __init__(self, score, apoints):
         self.score = score
         self.apoints = apoints
+        self.mountpt = None
     def __repr__(self):
         return '<task: score ' + repr(self.score) + ', apoints ' + repr(self.apoints) + '>'
 
@@ -62,11 +66,25 @@ def read_input(filename):
         W, H, R, M, T, L = parseline()
         for m in range(M):
             mountpoints.append(tuple(parseline()))
+        env = W, H, mountpoints
         for t in range(T):
             score, n = parseline()
             p = parseline()
             p = [(p[i], p[i+1]) for i in range(0, len(p), 2)]   # turn into 2-ples
-            tasks.append(Task(score, p))
+            task = Task(score, p)
+            # compute route & dist of this task's apoints
+            apoints = p
+            p = apoints[0]
+            wholedist = 0
+            wholepath = [p]
+            for a in apoints:
+                path, d = getroute(env, p, a)
+                wholedist += len(path) - 1      # why not use d?
+                wholepath += path[1:]
+                p = a
+            task.wholedist = wholedist
+            task.wholepath = wholepath
+            tasks.append(task)
     return W, H, R, M, T, L, mountpoints, tasks
 
 def getroute(env, p1, p2):
@@ -115,22 +133,22 @@ def step():
 def printenv(env, tasks):
     ''' print an ASCII map of the world '''
     W, H, mountpoints = env
-    map = [array('b', b'.' * W) for _ in range(H)]
-    for y,x in mountpoints:
-        map[x][y] = ord(b'm')
-    for y,x in [ap for t in tasks for ap in t.apoints]:
-        map[x][y] = ord(b'A')
+    map = [array('b', b'. ' * W) for _ in range(H)]
+    for x,y in mountpoints:
+        map[y][x*2] = ord(b'm')
+    for x,y in [ap for t in tasks for ap in t.apoints]:
+        map[y][x*2] = ord(b'A')
     for m in map:
         print(m.tobytes().decode())
 
 def printroute(path, env):
     ''' print an ASCII map of the world and the given path '''
     W, H, mountpoints = env
-    map = [array('b', b'.' * W) for _ in range(H)]
-    for y,x in path:
-        map[x][y] = ord(b'X')
-    for y,x in mountpoints:
-        map[x][y] = ord(b'm')
+    map = [array('b', b'. ' * W) for _ in range(H)]
+    for x,y in path:
+        map[y][x*2] = ord(b'X')
+    for x,y in mountpoints:
+        map[y][x*2] = ord(b'm')
     for m in map:
         print(m.tobytes().decode())
 
@@ -151,19 +169,28 @@ def setup():
     env = (W, H, mountpoints)   # the environment (game board)
     print(env, tasks)
     printenv(env, tasks)
+
     # find shortest path & dist from every mountpoint to every task
-    for m in mountpoints:
+    # build a distance matrix (rows=mountpoints, cols=tasks)
+    distmatrix = []
+    for m in mountpoints:       # rows of distmatrix
         print('mountpoint', m)
-        for t in tasks:
-            p = m
-            print('  task', t.score, 'points')
-            for a in t.apoints:
-                path, d = getroute(env, p, a)
-                print('    path', len(path)) #, path)
-                printroute(path, env)
-                p = a
+        drow = []
+        for t in tasks:         # cols of distmatrix
+            print('  task', t.score, 'points:', end='')
+            path, d = getroute(env, m, t.apoints[0])
+            drow.append(len(path) + t.wholedist)
+            print(' path', len(path), '+ wholepath', t.wholedist)
+            # printroute(path, env)
+        distmatrix.append(drow)
+    print('distmatrix\n ', distmatrix, '\n  summed', [sum(i) for i in distmatrix])
+
     # now choose the best R mountpoints, and assign the arms there.
+    # for t in range(len(tasks)):
+    #     print(tasks[t].mountpt, 'assigned to task', t)
+
     # set each arm with the path to its assigned apoints.
+
 
 if __name__ == '__main__':
     setup() 
