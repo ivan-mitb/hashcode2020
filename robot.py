@@ -25,6 +25,8 @@
 import heapq
 import math
 from array import array
+import numpy as np
+from itertools import combinations, permutations
 
 class Arm:
     '''
@@ -183,7 +185,16 @@ def setup():
             print(' path', len(path), '+ wholepath', t.wholedist)
             # printroute(path, env)
         distmatrix.append(drow)
-    print('distmatrix\n ', distmatrix, '\n  summed', [sum(i) for i in distmatrix])
+    distmatrix = np.array(distmatrix)
+    # print('distmatrix\n', distmatrix, '\n  summed', [sum(i) for i in distmatrix], sep='')
+    print('distmatrix\n', distmatrix, '\n  summed', distmatrix.sum(axis=1), sep='')
+
+    # now try every combination of R mountpoints, assign the arms there
+    # and play out a complete game of L steps.
+    mountpoints = np.array(mountpoints)
+    for m in combinations(np.arange(M), R):
+        play(mountpoints[m, :], tasks, L, distmatrix[m, :])
+
 
     # now choose the best R mountpoints, and assign the arms there.
     # for t in range(len(tasks)):
