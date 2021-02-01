@@ -132,6 +132,24 @@ def step():
     update positions of arms and task status
     '''
 
+def play(mountpoints, tasks, maxsteps, dist):
+    '''
+    schedule every task to available arms.
+    stepwise iterate through every path,
+    handle collisions by re-routing.
+    '''
+    arms = [Arm(m) for m in mountpoints]
+    
+def assign_tasks(mountpoints, tasks):
+    '''
+    permute tasks to mountpoints recursively
+    '''
+    from itertools import permutations
+    tasks = [1,2,3]
+    a = np.array(list(permutations(tasks)))
+    a[-1,:].reshape((2,))
+    np.array([1,2,3]).reshape((2,-1))
+
 def printenv(env, tasks):
     ''' print an ASCII map of the world '''
     W, H, mountpoints = env
